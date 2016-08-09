@@ -16,8 +16,8 @@ export default class Layout extends React.Component {
         </div>
 
         <div class="chat-info">
-          <RoomList />
           <UserList />
+          <RoomList />
         </div>
       </div>
     )
