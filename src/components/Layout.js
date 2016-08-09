@@ -1,24 +1,15 @@
 import React from 'react';
 
-import Message from './Message';
-import MessageList from './MessageList';
-import RoomList from './RoomList';
-import UserList from './UserList';
+import Contact from './ChatContact/Contact';
+import Info from './ChatInfo/Info';
 
 export default class Layout extends React.Component {
   render(){
     return(
       <div class="wrapper">
-        <div class="chat-contact">
-          <h1>Rooms.io!</h1>
-          <MessageList />
-          <Message />
-        </div>
-
-        <div class="chat-info">
-          <UserList />
-          <RoomList />
-        </div>
+        <h1>Rooms.io!</h1>
+        <Contact />
+        <Info />
       </div>
     )
   }
