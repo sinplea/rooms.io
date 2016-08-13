@@ -4,7 +4,7 @@ import io from 'socket.io-client';
 import Message from './Message';
 import MessageList from './MessageList';
 
-export default class Contact extends React.Component {
+export default class Chat extends React.Component {
   constructor(){
     super();
     this.state = { messages: [] };
@@ -35,7 +35,7 @@ export default class Contact extends React.Component {
       return <li key={index}>{message.from}: {message.body}</li>
     })
     return(
-      <div class="chat-contact">
+      <div class="chat">
         <MessageList messages={messages}/>
         <Message handleSubmit={this.handleSubmit}/>
       </div>

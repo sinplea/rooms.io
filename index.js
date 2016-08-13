@@ -15,8 +15,33 @@ app.use(webpackDevMiddleware(webpack(webpackConfig)));
 app.use(bodyParser.urlencoded({ extended: false }));
 
 io.on('connection', socket => {
+
+  var defaultRoom = 'General';
+  var currentRoom = '';
+  var rooms = ['General'];
+
+  socket.emit('setup', { rooms });
+
+  // socket.on('new user', data => {
+  //   data.room = defaultRoom;
+  //   socket.join(defaultRoom);
+  //   data.room = currentRoom;
+  //   io.in(defaultRoom).emit('user joined', data);
+  // })
+
+  socket.on('new user', data => {
+    socket.join(defaultRoom);
+    io.in(defaultRoom).emit('user joined', data);
+  })
+
+  socket.on('new room', data => {
+    socket.join(data);
+    io.in(currentRoom).emit('user left', data);
+    data.room = currentRoom;
+  })
+
   socket.on('message', body => {
-    socket.broadcast.emit('message', {
+    io.in(currentRoom).emit('message', {
       body,
       from: socket.id.slice(8)
     })
