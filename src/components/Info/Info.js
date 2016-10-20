@@ -1,5 +1,4 @@
 import React from 'react';
-import io from 'socket.io-client';
 
 import Room from './Room';
 import RoomList from './RoomList';
@@ -11,34 +10,44 @@ export default class Info extends React.Component {
     super();
     this.state = {
       users: [],
-      rooms: []
+      rooms: [],
+      currentRoom: '',
+      username: '',
+      hasUsername: false
     }
   }
 
-  componentDidMount(data){
-    this.socket = io('/');
-    this.socket.on('new user', data => {
-      this.setState({ users: [...this.state.users, data] });
+  componentDidMount(){
+    const socket = this.props.socket;
+    //set defaults for room list
+    socket.on('setup', data => {
+      this.setState({ currentRoom: data.currentRoom });
     })
-    this.socket.on('new room', data => {
-      this.setState({ rooms: [...this.state.rooms, data] });
+    socket.on('new room', room => {
+      this.setState({ currentRoom: room });
+    })
+    socket.on('new user', username => {
+      this.setState({ username: username });
     })
   }
 
   userSubmit = event => {
-    const username = event.target.value
+    const socket = this.props.socket;
+    const username = event.target.value;
     if(event.keyCode === 13  && username){
       this.setState({ users: [...this.state.users, username] });
-      this.socket.emit('new user', username)
+      socket.emit('new user', username)
       event.target.value = '';
+      this.setState({ hasUsername: true });
     }
   }
 
   roomSubmit = event => {
+    const socket = this.props.socket;
     const room = event.target.value
     if(event.keyCode === 13  && room){
       this.setState({ rooms: [...this.state.rooms, room] });
-      this.socket.emit('new room', room)
+      socket.emit('new room', room)
       event.target.value = '';
     }
   }
@@ -52,12 +61,13 @@ export default class Info extends React.Component {
       return <li key={index}>{user}</li>
     })
     return(
-      <div class="chat-info">
+      <div class="chat-info col2">
         <RoomList rooms={rooms}/>
         <Room roomSubmit={this.roomSubmit}/>
 
         <UserList users={users}/>
-        <User userSubmit={this.userSubmit}/>
+        {this.state.hasUsername ? <p>Username: {this.state.username}</p> : <User userSubmit={this.userSubmit}/>}
+        <p>Current Room: {this.state.currentRoom}</p>
       </div>
     )
   }

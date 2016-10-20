@@ -1,5 +1,4 @@
 import React from 'react';
-import io from 'socket.io-client';
 
 import Message from './Message';
 import MessageList from './MessageList';
@@ -11,13 +10,20 @@ export default class Chat extends React.Component {
   }
 
   componentDidMount(){
-    this.socket = io('/');
-    this.socket.on('message', message => {
+    const socket = this.props.socket;
+    socket.on('message', message => {
+      this.setState({ messages: [...this.state.messages, message] });
+    })
+    socket.on('user left', message => {
+      this.setState({ messages: [...this.state.messages, message] });
+    })
+    socket.on('user joined', message => {
       this.setState({ messages: [...this.state.messages, message] });
     })
   }
 
   handleSubmit = event => {
+    const socket = this.props.socket;
     const body = event.target.value
     if(event.keyCode === 13  && body){
       const message = {
@@ -25,7 +31,7 @@ export default class Chat extends React.Component {
         from: 'Me'
       }
       this.setState({ messages: [...this.state.messages, message] });
-      this.socket.emit('message', body)
+      socket.emit('message', body)
       event.target.value = '';
     }
   }
@@ -35,7 +41,7 @@ export default class Chat extends React.Component {
       return <li key={index}>{message.from}: {message.body}</li>
     })
     return(
-      <div class="chat">
+      <div class="chat col1">
         <MessageList messages={messages}/>
         <Message handleSubmit={this.handleSubmit}/>
       </div>

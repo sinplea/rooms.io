@@ -15,37 +15,46 @@ app.use(webpackDevMiddleware(webpack(webpackConfig)));
 app.use(bodyParser.urlencoded({ extended: false }));
 
 io.on('connection', socket => {
+  const defaultRoom = 'General';
+  var userList = [];
 
-  var defaultRoom = 'General';
-  var currentRoom = '';
-  var rooms = ['General'];
+  socket.join(defaultRoom);
+  socket.currentRoom = "General";
 
-  socket.emit('setup', { rooms });
+  // General Info is sent to the Info component
+  // when a socket first connects
+  socket.emit('setup',
+  {
+    currentRoom: socket.currentRoom,
+    userList: userList
+  });
 
-  // socket.on('new user', data => {
-  //   data.room = defaultRoom;
-  //   socket.join(defaultRoom);
-  //   data.room = currentRoom;
-  //   io.in(defaultRoom).emit('user joined', data);
-  // })
+  // !!The user list on client should display all sockets connected to the server!!
+  socket.on('new room', room => {
+    var string = "User left";
+    socket.to(socket.currentRoom).emit('user left', string);
+    socket.leave(socket.currentRoom);
 
-  socket.on('new user', data => {
-    socket.join(defaultRoom);
-    io.in(defaultRoom).emit('user joined', data);
-  })
+    socket.currentRoom = room;
+    socket.join(socket.currentRoom);
 
-  socket.on('new room', data => {
-    socket.join(data);
-    io.in(currentRoom).emit('user left', data);
-    data.room = currentRoom;
+    socket.emit('new room', room);
+    socket.to(socket.currentRoom).emit('user joined', 'User joined');
+  });
+
+  socket.on('new user', username => {
+    socket.username = username;
+    socket.emit('new user', socket.username);
   })
 
   socket.on('message', body => {
-    io.in(currentRoom).emit('message', {
+    socket.to(socket.currentRoom).emit('message', {
       body,
-      from: socket.id.slice(8)
-    })
-  })
+      from: socket.username || socket.id.slice(8)
+    });
+  });
+
+  //Hover over bar of private text for password
 })
 
 server.listen(3000);
